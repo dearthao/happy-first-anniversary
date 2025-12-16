@@ -1,51 +1,66 @@
-# .github/workflows/deploy.yml
+name: Deploy Project Pages
 
-name: Deploy to GitHub Pages
-
+# 1. Triggers on pushes to the main branch and allows manual runs
 on:
   push:
-    # This workflow runs whenever code is pushed to the 'main' branch
     branches:
       - main
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# Defines two sequential jobs
 jobs:
-  deployment:
-    # Use the latest version of Ubuntu
+  # Job 1: Builds the project files
+  build:
     runs-on: ubuntu-latest
-
+    
+    # Permissions required for checking out and building
     permissions:
-      contents: write
+      contents: read # Read permission for checkout and building
 
     strategy:
       matrix:
-        node-version: [20.x] # Specify the Node.js version needed
-
+        node-version: [20.x] # Use the required Node.js version
+        
     steps:
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm' # Speeds up installation
+          cache: 'npm'
 
       - name: Install Dependencies
         run: npm install
 
-      # The build step (equivalent to npm run build)
-      - name: Build Project
+      - name: Build Project (Creates the 'dist' folder)
         run: npm run build
 
-      # The deployment step (equivalent to npm run deploy)
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          # TOKEN is required for gh-pages to push to the repository
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          # The source directory: Vite's build output is 'dist'
-          publish_dir: ./dist
-          # Set the target branch to gh-pages
-          publish_branch: gh-pages
+          # Vite's build output folder
+          path: './dist' 
+
+  # Job 2: Deploys the built files to GitHub Pages
+  deploy_pages:
+    # This job only runs if the 'build' job succeeded
+    needs: build
+    runs-on: ubuntu-latest
+
+    # Crucial permissions required by the official action
+    permissions:
+      contents: write # For writing to the repository (if necessary)
+      pages: write # Grants permission to deploy to GitHub Pages
+      id-token: write # Required for secure deployment with OIDC
+
+    # Required to initialize the Pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 # The official deployment action
