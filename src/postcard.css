@@ -1,20 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Sriracha&display=swap');
 
-.container {
-  width: 960px; /* Fixed width for desktop */
-  display: grid;
-  grid-template-columns: 2fr 1fr; /* Two columns */
-}
-
-/* --- Media Query: Styles for screens 600px wide or less (Phones) --- */
-@media screen and (max-width: 600px) {
-  .container {
-    width: 100%; /* Full width for phone */
-    grid-template-columns: 1fr; /* Collapse to a single column */
-    padding: 10px;
-  }
-}
-
 .app-layout {
   min-height: 100vh;
   min-width: 100vw;
@@ -36,8 +21,8 @@
 
 .gallery-item {
   position: absolute;
-  width: 210px;
-  height: 140px;
+  width: 18vmin;
+  height: calc(18vmin * 2 / 3);
   opacity: 0;
   transition: opacity 1.5s ease-in-out;
 }
@@ -75,8 +60,8 @@
 }
 
 .postcard {
-  width: 900px;
-  height: 600px;
+  width: 84vmin;
+  height: calc(84vmin * 2 / 3);
   position: relative;
   cursor: pointer;
 }
@@ -134,13 +119,14 @@
 }
 
 .corner-text-ribbon {
+  width: 45vmin;
   position: absolute;
-  top: 80px;
-  right: 80px;
+  top: 10vmin;
+  right: 5vmin;
   background-color: #5880B1; 
   color: white;
   padding: 8px 20px;
-  font-size: 24px; 
+  font-size: 2.5vmin; 
   font-weight: bold;
   letter-spacing: 1px;
   text-transform: uppercase;

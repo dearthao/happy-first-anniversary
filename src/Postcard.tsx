@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './postcard.css'; 
 
 // --- 1. IMPORT ALL NECESSARY IMAGES ---
@@ -19,7 +19,8 @@ import img8 from './assets/8.jpg';
 import img9 from './assets/9.jpg'; 
 import img10 from './assets/10.JPG';
 import img11 from './assets/11.JPG';  
-import img12 from './assets/12.jpg';  
+import img12 from './assets/12.jpg';
+import img13 from './assets/13.jpg';
 
 const galleryImages = [
   { id: 1, src: img1, alt: "Gallery Image 1" },
@@ -34,171 +35,144 @@ const galleryImages = [
   { id: 10, src: img10, alt: "Gallery Image 10" },
   { id: 11, src: img11, alt: "Gallery Image 11" },
   { id: 12, src: img12, alt: "Gallery Image 12" },
+  { id: 13, src: img13, alt: "Gallery Image 13" },
 ];
 
 const IMAGE_COUNT = galleryImages.length;
-const PC_WIDTH = 900;
-const PC_HEIGHT = 600;
-const EXCLUSION_ZONE_HEIGHT = PC_HEIGHT * 2;
-const VIEWPORT_MARGIN = 20;
-
-const IMG_WIDTH = 140; 
-const IMG_HEIGHT = 210;
-const SAFE_SIZE = 260;
-const GAP = 30;
-
-let occupiedAreas = [];
-
-const intersects = (newRect) => {
-  for (const oldRect of occupiedAreas) {
-    if (newRect.left > oldRect.right ||
-        newRect.right < oldRect.left ||
-        newRect.top > oldRect.bottom ||
-        newRect.bottom < oldRect.top) {
-        continue; 
-    }
-    return true; 
-  }
-  return false; 
-};
-
-const calculateNonOverlappingPosition = (id) => {
-  const WINDOW_WIDTH = window.innerWidth;
-  const WINDOW_HEIGHT = window.innerHeight;
-  const EXCLUSION_CENTER_Y = WINDOW_HEIGHT / 2;
-  const FLAP_HEIGHT = PC_HEIGHT;
-
-  const EXCLUSION_LEFT = (WINDOW_WIDTH / 2) - (PC_WIDTH / 2);
-  const EXCLUSION_RIGHT = (WINDOW_WIDTH / 2) + (PC_WIDTH / 2);
-  const EXCLUSION_TOP = EXCLUSION_CENTER_Y - (FLAP_HEIGHT / 2) - FLAP_HEIGHT; 
-  const EXCLUSION_BOTTOM = EXCLUSION_CENTER_Y + (FLAP_HEIGHT / 2);
-
-  const SafeExclusionTop = Math.max(VIEWPORT_MARGIN, EXCLUSION_TOP); 
-
-  const MIN_Y = VIEWPORT_MARGIN; 
-  const MAX_Y = WINDOW_HEIGHT - SAFE_SIZE - VIEWPORT_MARGIN; 
-  const MIN_X = VIEWPORT_MARGIN;
-  const MAX_X = WINDOW_WIDTH - SAFE_SIZE - VIEWPORT_MARGIN;
-
-  const MAX_ATTEMPTS = 10000;
-
-  let randX, randY;
-  let attempts = 0;
-
-  while (attempts < MAX_ATTEMPTS) {
-    attempts++;
-    
-    const quadrant = Math.floor(Math.random() * 4); 
-
-    if (quadrant === 0) { // LEFT side
-      const leftLimit = EXCLUSION_LEFT - SAFE_SIZE;
-      if (leftLimit > MIN_X) {
-        randX = MIN_X + Math.random() * (leftLimit - MIN_X);
-      } else { continue; }
-      randY = MIN_Y + Math.random() * (MAX_Y - MIN_Y); 
-
-    } else if (quadrant === 1) { // RIGHT side
-      const rightStart = EXCLUSION_RIGHT;
-      if (MAX_X > rightStart) {
-        randX = rightStart + Math.random() * (MAX_X - rightStart);
-      } else { continue; }
-      randY = MIN_Y + Math.random() * (MAX_Y - MIN_Y);
-
-    } else if (quadrant === 2) { // TOP side
-      randX = MIN_X + Math.random() * (MAX_X - MIN_X);
-
-      const topLimit = SafeExclusionTop - SAFE_SIZE;
-      if (topLimit > MIN_Y) {
-        randY = MIN_Y + Math.random() * (topLimit - MIN_Y);
-      } else {
-        continue; 
-      }
-    } else { // BOTTOM side
-        randX = MIN_X + Math.random() * (MAX_X - MIN_X);
-
-        const bottomStart = EXCLUSION_BOTTOM;
-        if (MAX_Y > bottomStart) {
-          randY = bottomStart + Math.random() * (MAX_Y - bottomStart);
-        } else {
-          continue;
-        }
-    }
-    const newRect = {
-      left: randX - GAP,
-      right: randX + SAFE_SIZE + GAP,
-      top: randY - GAP,
-      bottom: randY + SAFE_SIZE + GAP,
-    };
-    
-    if (!intersects(newRect)) {
-      occupiedAreas.push(newRect);
-      return { 
-        top: `${randY}px`, 
-        left: `${randX}px`, 
-        transform: `rotate(${Math.random() * 30 - 15}deg)` 
-      };
-    }
-  }
-
-  console.warn(`Could not place image ${id} without overlap after ${MAX_ATTEMPTS} attempts. Placing off-screen.`);
-  return { top: '-500px', left: '-500px', transform: 'rotate(0deg)' };
-};
 
 const ImageGalleryBackground = ({ images, visibleIndex, fadeTimestamps, isOpen }) => {
-    const [currentPositions, setCurrentPositions] = useState([]);
-    useEffect(() => {
-      if (currentPositions.length === 0) {
-        occupiedAreas = []; 
-        const initialPositions = images.map(img => calculateNonOverlappingPosition(img.id));
-        setCurrentPositions(initialPositions);
-      }
-    }, [currentPositions.length, images]);
+  const [currentPositions, setCurrentPositions] = useState([]);
 
-    useEffect(() => {
-      let positionTimer;
+  const calculatePositions = useCallback((imgs) => {
+    const winW = window.innerWidth;
+    const winH = window.innerHeight;
+    const vmin = Math.min(winW, winH) / 100;
 
-      if (isOpen) {
-        positionTimer = setTimeout(() => {
-          occupiedAreas = []; 
-          const newPositions = images.map(img => calculateNonOverlappingPosition(img.id));
-          setCurrentPositions(newPositions);
-        }, 1800);
-      } else {}
-      return () => {
-        if (positionTimer) {
-          clearTimeout(positionTimer);
-        }
-      };
-    }, [isOpen, images]); 
+    const IMG_W = 15 * vmin;
+    const IMG_H = 10 * vmin;
+    const PC_W = 90 * vmin;
+    const PC_H = PC_W * (2/3);
+    const GAP = 2.5 * vmin;
 
-    if (currentPositions.length === 0) {
-      return <div className="background-gallery"></div>;
+    // Optimized height for 13-inch MacBook Air to fit 5 strips
+    const STRIP_H = IMG_H + (2 * IMG_W * 0.20); 
+    
+    const pcTop = (winH / 2) - (PC_H / 2);
+    const pcBottom = (winH / 2) + (PC_H / 2);
+    const flapTop = pcTop - PC_H;
+
+    const pcRect = {
+      left: (winW - PC_W) / 2 - GAP,
+      right: (winW + PC_W) / 2 + GAP,
+      top: flapTop - GAP,
+      bottom: pcBottom + GAP
+    };
+
+    let strips = [];
+    let currentY = 0;
+
+    // Greedy strip generation: fill the bottom-most area
+    while (currentY < winH - (IMG_H / 2)) {
+      const yStart = currentY;
+      const actualStripH = Math.min(STRIP_H, winH - yStart);
+      const yEnd = yStart + actualStripH;
+      const overlapsPC = !(yEnd < pcRect.top || yStart > pcRect.bottom);
+
+      strips.push({
+        y: yStart,
+        centerY: yStart + (actualStripH / 2) - (IMG_H / 2),
+        isBlockedCenter: overlapsPC,
+        occupied: []
+      });
+      currentY += STRIP_H;
     }
 
-    return (
-      <div className="background-gallery">
-        {images.map((img, index) => {
-          const imageId = index + 1; 
-          const isVisible = imageId <= visibleIndex; 
-          const isFading = fadeTimestamps[index] > 0;
-          const animationClass = 
-            (!isOpen && visibleIndex > 0) ? 'show-all' : 
-            (isFading && isOpen) ? 'faded-out' :     
-            isVisible ? 'visible' : 'hidden';           
-          return (
-            <div 
-              key={img.id} 
-              className={`gallery-item item-${img.id} ${animationClass}`}
-              style={currentPositions[index]}
-            >
-              <img src={img.src} alt={img.alt} className="gallery-img" />
-            </div>
-          );
-        })}
+    const positions = new Array(imgs.length).fill(null);
+    // Shuffle which image gets processed first to keep it random
+    const shuffledImgs = [...imgs].sort(() => Math.random() - 0.5);
+
+    shuffledImgs.forEach((img) => {
+      let placed = false;
+      // Find the strip with the least images to ensure even distribution
+      const sortedStrips = [...strips].sort((a, b) => a.occupied.length - b.occupied.length);
+
+      for (let s = 0; s < sortedStrips.length && !placed; s++) {
+        const strip = sortedStrips[s];
+        
+        for (let attempt = 0; attempt < 1000; attempt++) {
+          const x = Math.random() * (winW - IMG_W);
+          const cLeft = x - GAP;
+          const cRight = x + IMG_W + GAP;
+
+          if (strip.isBlockedCenter) {
+            if (!(cRight < pcRect.left || cLeft > pcRect.right)) continue;
+          }
+
+          const hitsOther = strip.occupied.some(o => !(cRight < o.l || cLeft > o.r));
+          if (hitsOther) continue;
+
+          strip.occupied.push({ l: cLeft, r: cRight });
+          const originalIndex = imgs.findIndex(i => i.id === img.id);
+          positions[originalIndex] = {
+            top: `${strip.centerY}px`,
+            left: `${x}px`,
+            width: `${IMG_W}px`,
+            height: `${IMG_H}px`,
+            transform: `rotate(${Math.random() * 30 - 15}deg)`,
+            position: 'absolute' as const,
+            zIndex: 10
+          };
+          placed = true;
+          break;
+        }
+      }
+    });
+    return positions;
+  }, []);
+
+  // Sync positions on initial load and window resize
+  useEffect(() => {
+    setCurrentPositions(calculatePositions(images));
+    const handleResize = () => setCurrentPositions(calculatePositions(images));
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [images, calculatePositions]);
+
+  // Shuffle logic: re-calculate after the flap opens
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        setCurrentPositions(calculatePositions(images));
+      }, 1800); 
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, images, calculatePositions]);
+
+  if (currentPositions.length === 0) return null;
+
+  return (
+    <div className="background-gallery">
+      {images.map((img, index) => {
+        const isVisible = (index + 1) <= visibleIndex;
+        const isFading = fadeTimestamps[index] > 0;
+        const animationClass = 
+          (!isOpen && visibleIndex > 0) ? 'show-all' : 
+          (isFading && isOpen) ? 'faded-out' : 
+          isVisible ? 'visible' : 'hidden';
+
+        return (
+          <div 
+            key={img.id} 
+            className={`gallery-item item-${img.id} ${animationClass}`} 
+            style={currentPositions[index]}
+          >
+            <img src={img.src} alt={img.alt} className="gallery-img" />
+          </div>
+        );
+      })}
     </div>
   );
 };
-
 
 const Postcard = () => {
   const [isOpen, setIsOpen] = useState(false);
