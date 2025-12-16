@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './Postcard.css'; 
+import './postcard.css'; 
 
 // --- 1. IMPORT ALL NECESSARY IMAGES ---
 // Ensure these paths are correct relative to this file's location (e.g., in src/assets/)
