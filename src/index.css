@@ -1,0 +1,24 @@
+:root {
+  /* Keep your existing font settings if you like them */
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  display: flex; /* CRITICAL for Flexbox centering */
+  justify-content: center; /* Centers horizontally */
+  align-items: center;    /* Centers vertically */
+  min-width: 320px;
+  min-height: 100vh; /* CRITICAL for vertical centering */
+}
+
+#root {
+  /* Must occupy all available space within the centered body */
+  width: 100%; 
+  height: 100%; 
+  
+  /* Also use Flexbox to center the postcard-container */
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+}
