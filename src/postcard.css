@@ -1,5 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Sriracha&display=swap');
 
+.container {
+  width: 960px; /* Fixed width for desktop */
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* Two columns */
+}
+
+/* --- Media Query: Styles for screens 600px wide or less (Phones) --- */
+@media screen and (max-width: 600px) {
+  .container {
+    width: 100%; /* Full width for phone */
+    grid-template-columns: 1fr; /* Collapse to a single column */
+    padding: 10px;
+  }
+}
+
 .app-layout {
   min-height: 100vh;
   min-width: 100vw;
