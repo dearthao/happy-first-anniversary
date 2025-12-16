@@ -1,0 +1,48 @@
+# .github/workflows/deploy.yml
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    # This workflow runs whenever code is pushed to the 'main' branch
+    branches:
+      - main
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  deployment:
+    # Use the latest version of Ubuntu
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x] # Specify the Node.js version needed
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm' # Speeds up installation
+
+      - name: Install Dependencies
+        run: npm install
+
+      # The build step (equivalent to npm run build)
+      - name: Build Project
+        run: npm run build
+
+      # The deployment step (equivalent to npm run deploy)
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          # TOKEN is required for gh-pages to push to the repository
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # The source directory: Vite's build output is 'dist'
+          publish_dir: ./dist
+          # Set the target branch to gh-pages
+          publish_branch: gh-pages
