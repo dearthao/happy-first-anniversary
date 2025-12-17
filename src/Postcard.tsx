@@ -22,6 +22,7 @@ import img11 from './assets/11.JPG';
 import img12 from './assets/12.jpg';
 import img13 from './assets/13.jpg';
 
+
 const galleryImages = [
   { id: 1, src: img1, alt: "Gallery Image 1" },
   { id: 2, src: img2, alt: "Gallery Image 2" },
@@ -88,10 +89,8 @@ const ImageGalleryBackground = ({ images, visibleIndex, fadeTimestamps, isOpen }
     }
 
     const positions = new Array(imgs.length).fill(null);
-    // Shuffle which image gets processed first to keep it random
-    const shuffledImgs = [...imgs].sort(() => Math.random() - 0.5);
 
-    shuffledImgs.forEach((img) => {
+    imgs.forEach((img) => {
       let placed = false;
       // Find the strip with the least images to ensure even distribution
       const sortedStrips = [...strips].sort((a, b) => a.occupied.length - b.occupied.length);
@@ -194,7 +193,7 @@ const Postcard = () => {
     let timers = [];
     
     if (isOpen && visibleIndex === 0) {
-      for (let i = 1; i <= galleryImages.length; i++) {
+      for (let i = 1; i <= IMAGE_COUNT; i++) {
         const revealDelay = i * 10000; // 10 seconds per image
 
         const revealTimer = setTimeout(() => {
@@ -216,7 +215,7 @@ const Postcard = () => {
         timers.push(revealTimer);
       }
     } else if (!isOpen) {
-      setFadeTimestamps(new Array(galleryImages.length).fill(0));
+      setFadeTimestamps(new Array(IMAGE_COUNT).fill(0));
     }
 
     return () => {
