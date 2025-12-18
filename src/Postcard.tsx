@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import * as jose from 'jose';
 import './postcard.css'; 
 
 // --- 1. IMPORT ALL NECESSARY IMAGES ---
@@ -51,7 +53,7 @@ const ImageGalleryBackground = ({ images, visibleIndex, fadeTimestamps, isOpen }
 
     const IMG_W = 15 * vmin;
     const IMG_H = 10 * vmin;
-    const PC_W = 90 * vmin;
+    const PC_W = 87 * vmin;
     const PC_H = PC_W * (2/3);
     const GAP = 2.5 * vmin;
 
@@ -174,10 +176,38 @@ const ImageGalleryBackground = ({ images, visibleIndex, fadeTimestamps, isOpen }
 };
 
 const Postcard = () => {
+  const [isVerified, setIsVerified] = useState(false);
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [visibleIndex, setVisibleIndex] = useState(0); // 0 = hidden, 1-10 = revealed
   const [fadeTimestamps, setFadeTimestamps] = useState(new Array(IMAGE_COUNT).fill(0));
 
+  useEffect(() => {
+    const verifyAccess = async () => {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        navigate('/');
+        return;
+      }
+
+      try {
+        const publicKey = await jose.importSPKI(
+          import.meta.env.VITE_PUBLIC_KEY!.replace(/\\n/g, '\n'),
+          'RS256'
+        );
+        
+        await jose.jwtVerify(token, publicKey);
+        setIsVerified(true);
+      } catch (error) {
+        console.error("Token invalid", error);
+        localStorage.removeItem('auth_token');
+        navigate('/');
+      }
+    };
+
+    verifyAccess();
+  }, [navigate]);
+  
   const handleClick = () => {
     if (isOpen) {
       setVisibleIndex(IMAGE_COUNT); // Show all immediately
@@ -222,6 +252,9 @@ const Postcard = () => {
       timers.forEach(timer => clearTimeout(timer));
     };
   }, [isOpen]);
+
+  if (!isVerified) return <div className="loading">Checking invitation...</div>;
+
   return (
     <div className="app-layout">
       <ImageGalleryBackground 
@@ -255,7 +288,7 @@ const Postcard = () => {
                 Lần này anh không về được cũng là vì quyết định mà chắc là sẽ làm cho chuyện tình cảm của 2 đứa mình khó khăn hơn nhiều phần so với trước. Anh biết là em đã rất buồn và suy nghĩ nhiều về chuyện này (chắc là em cũng có trách anh nhiều lắm 😞) nhưng anh mong cả 2 đứa mình sẽ cùng cố gắng vượt qua nó nhé vì anh không muốn nó sẽ trở thành quyết định mà sau này khiến anh phải ân hận. Nên cũng mong em sẽ tiếp tục giúp đỡ anh như những lần trước nhá.
               </p>
               <p className="message-content">
-                Lúc này chắc là ảnh bên ngoài cũng hiện ra hết rùi. Anh để nó hiện theo thứ thời gian từ lúc mình bắt đầu quen nhau cho đến bây giờ. Mong là mình sẽ tiếp tục bên nhau vượt qua thời gian này để có thêm nhiều lần kỉ niệm nữa nhá. Happy our first anniversary 😘😘😘.
+                Lúc này chắc là ảnh bên ngoài cũng hiện ra hết rùi. Anh để nó hiện theo thứ thời gian từ lúc mình bắt đầu quen nhau cho đến bây giờ. Mong là mình sẽ tiếp tục bên nhau vượt qua thời gian này để có thêm nhiều lần kỉ niệm nữa nhá. Happy our first anniversary! Iu em 😘😘😘.
               </p>
             </div>
 

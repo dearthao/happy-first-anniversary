@@ -36,7 +36,10 @@ jobs:
 
       - name: Build Project (Creates the 'dist' folder)
         run: npm run build
-
+        env:
+          VITE_PASSWORD_HASH: ${{ secrets.VITE_PASSWORD_HASH }}
+          VITE_PRIVATE_KEY: ${{ secrets.VITE_PRIVATE_KEY }}
+          VITE_PUBLIC_KEY: ${{ secrets.VITE_PUBLIC_KEY }}
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:

@@ -1,11 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Sriracha&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Shantell Sans&display=swap');
+
 
 .app-layout {
-  min-height: 100vh;
-  min-width: 100vw;
+  min-height: 90vh;
+  min-width: 90vw;
   position: relative;
   overflow: hidden;
   z-index: 20;
+  box-sizing: border-box; 
+  
+  position: relative;
+  margin: 0;
+  padding: 0;
 }
 
 .background-gallery {
@@ -55,13 +61,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  min-height: 90vh;
   perspective: 1500px;
 }
 
 .postcard {
-  width: 84vmin;
-  height: calc(84vmin * 2 / 3);
+  width: 90vmin;
+  height: calc(90vmin * 2 / 3);
   position: relative;
   cursor: pointer;
 }
@@ -73,6 +79,7 @@
   width: 100%;
   height: 100%;
   background-color: #f0e5d1;
+  justify-content: flex-start;
   padding: 30px;
   box-sizing: border-box;
   border-radius: 10px;
@@ -150,18 +157,20 @@
 }
 
 .message-title {
-  font-family: 'Sriracha', cursive;
+  align-self: flex-start;
+  font-family: 'Shantell Sans', cursive;
   color: #c62828;
   margin-top: 0;
   font-size: 1.5rem;
 }
 
 .message-body {
-  max-height: 400px; 
+  text-align: justify;
+  max-height: 60vmin; 
   height: auto;
   overflow-y: auto;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 0vmin;
+  padding-bottom: 0vmin;
   margin: 0;
   position: relative; 
 }
@@ -171,7 +180,7 @@
   width: 8px;
 }
 .message-body::-webkit-scrollbar-track {
-  background: #7e7977;
+  background: #d1cfce;
   border-radius: 10px;
 }
 
@@ -185,7 +194,7 @@
 }
 
 .message-content {
-  font-family: 'Sriracha', cursive;
+  font-family: 'Shantell Sans', cursive;
   line-height: 1.4;
   color: #333;
   font-size: 1.3rem; 
@@ -194,7 +203,7 @@
 }
 
 .message-closing {
-  font-family: 'Sriracha', cursive;
+  font-family: 'Shantell Sans', cursive;
   font-size: 1.4rem;
   color: #666;
   margin-bottom: 0;
@@ -218,7 +227,75 @@
   color: white;
   padding: 8px 15px;
   border-radius: 20px;
-  font-family: 'Sriracha', cursive;
+  font-family: 'Shantell Sans', cursive;
   font-size: 1rem;
   pointer-events: none;
+}
+
+.start-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+  width: 90vw;
+  overflow: hidden;
+  box-sizing: border-box; 
+  
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+.envelope-trigger {
+  transition: transform 0.3s ease, opacity 0.3s ease, filter 0.3s ease;
+  cursor: pointer;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.15));
+}
+
+.envelope-trigger:not(.is-active):hover {
+  transform: scale(1.05);
+}
+
+.envelope-trigger.is-active {
+  cursor: default;
+  filter: blur(2px) drop-shadow(0 5px 10px rgba(0,0,0,0.1));
+  opacity: 0.9;
+}
+
+.password-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10; 
+  width: 84vmin; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.password-input {
+  padding: 15px 25px;
+  font-size: 1.3rem;
+  border: 2px solid #ffb7b7;
+  border-radius: 30px;
+  outline: none;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  background-color: rgba(255, 255, 255, 0.95); 
+  width: 60%;
+  min-width: 200px;
+}
+
+.password-input::placeholder {
+  font-size: 1.3rem;   
+  opacity: 0.7;        
+  letter-spacing: 0; 
+  font-weight: normal;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translate(-50%, -40%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
 }
